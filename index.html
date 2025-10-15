@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xifres i Lletres</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+  <div id="app" class="max-w-md w-full text-center"></div>
+
+  <script>
+    const app = document.getElementById("app");
+
+    // ---------- PANTALLA INICIAL ----------
+    const mostraInici = () => {
+      app.innerHTML = `
+        <h1 class="text-3xl font-bold mb-8">🔢 Xifres i Lletres 🔤</h1>
+        <div class="space-y-4">
+          <button onclick="mostraLletres()" class="bg-blue-600 hover:bg-blue-700 p-3 rounded w-full font-semibold">Lletres</button>
+          <button onclick="mostraXifres()" class="bg-green-600 hover:bg-green-700 p-3 rounded w-full font-semibold">Xifres</button>
+        </div>
+      `;
+    };
+
+    // ---------- LLETRES ----------
+    const vocals = ["A","E","I","O","U"];
+    const consonants = ["B","C","D","F","G","H","J","K","L","M","N","NY","P","Q","R","S","T","V","X","Z"];
+
+    let numVocals = 4;
+    let numConsonants = 5;
+
+    const mostraLletres = () => {
+      actualitzaLletresConfig();
+    };
+
+    const actualitzaLletresConfig = () => {
+      app.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">🔤 Mode Lletres</h2>
+        <div class="mb-6">
+          <p class="mb-2 text-lg">Tria el nombre de consonants i vocals (total 9)</p>
+          <div class="flex items-center justify-center mb-2">
+            <button onclick="canviaConsonants(-1)" class="bg-gray-700 px-3 py-1 rounded-l">-</button>
+            <div class="bg-gray-800 px-4 py-2">Consonants: ${numConsonants}</div>
+            <button onclick="canviaConsonants(1)" class="bg-gray-700 px-3 py-1 rounded-r">+</button>
+          </div>
+          <p class="mt-2">Vocals: ${numVocals}</p>
+        </div>
+        <button onclick="generaLletres()" class="bg-blue-500 hover:bg-blue-600 p-2 rounded w-full font-semibold">Acceptar</button>
+        <button onclick="mostraInici()" class="mt-3 text-sm text-gray-300 underline">Tornar</button>
+      `;
+    };
+
+    const canviaConsonants = (delta) => {
+      const nouValor = numConsonants + delta;
+      if (nouValor >= 0 && nouValor <= 9) {
+        numConsonants = nouValor;
+        numVocals = 9 - nouValor;
+        actualitzaLletresConfig();
+      }
+    };
+
+    const generaLletres = () => {
+      const resultat = [];
+      for (let i = 0; i < numConsonants; i++) {
+        resultat.push(consonants[Math.floor(Math.random() * consonants.length)]);
+      }
+      for (let i = 0; i < numVocals; i++) {
+        resultat.push(vocals[Math.floor(Math.random() * vocals.length)]);
+      }
+      // Barregem les lletres
+      for (let i = resultat.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [resultat[i], resultat[j]] = [resultat[j], resultat[i]];
+      }
+
+      app.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">🔤 Lletres seleccionades</h2>
+        <div class="flex flex-wrap justify-center gap-2 mb-6">
+          ${resultat.map(l => `<div class="bg-gray-800 text-xl font-bold px-3 py-2 rounded">${l}</div>`).join("")}
+        </div>
+        <button onclick="mostraInici()" class="bg-gray-700 hover:bg-gray-600 p-2 rounded w-full font-semibold">Nova partida</button>
+      `;
+    };
+
+    // ---------- XIFRES ----------
+    let files = [0, 0, 0, 0]; // total 6
+
+    const mostraXifres = () => {
+      files = [0, 0, 0, 0];
+      actualitzaXifresConfig();
+    };
+
+    const actualitzaXifresConfig = () => {
+      const total = files.reduce((a,b)=>a+b,0);
+      const potAcceptar = total === 6;
+
+      app.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">🔢 Mode Xifres</h2>
+        <p class="mb-4">Distribueix 6 xifres entre les files:</p>
+        <div class="space-y-3 mb-4">
+          ${files.map((v,i)=>`
+            <div class="flex items-center justify-between bg-gray-800 p-2 rounded">
+              <div>Fila ${i+1}</div>
+              <div class="flex items-center">
+                <div class="bg-gray-700 px-3 py-1 rounded mr-2">${v}</div>
+                <button onclick="incrementaFila(${i})" class="bg-green-600 px-3 py-1 rounded">+</button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+        <p class="mb-2">Total: ${total} / 6</p>
+        <button ${potAcceptar ? "" : "disabled"} onclick="generaXifres()" 
+          class="p-2 rounded w-full font-semibold ${potAcceptar ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-700 opacity-50 cursor-not-allowed'}">
+          Acceptar
+        </button>
+        <button onclick="mostraInici()" class="mt-3 text-sm text-gray-300 underline">Tornar</button>
+      `;
+    };
+
+    const incrementaFila = (i) => {
+      const total = files.reduce((a,b)=>a+b,0);
+      if (total < 6) {
+        files[i]++;
+        actualitzaXifresConfig();
+      }
+    };
+
+    const generaXifres = () => {
+      const petites = [];
+      const grans = [10, 25, 50, 75];
+      const resultat = [];
+
+      // Genera segons la configuració
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < files[i]; j++) {
+          resultat.push(Math.floor(Math.random() * 9) + 1);
+        }
+      }
+      for (let j = 0; j < files[3]; j++) {
+        resultat.push(grans[Math.floor(Math.random() * grans.length)]);
+      }
+
+      // Barregem les xifres
+      for (let i = resultat.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [resultat[i], resultat[j]] = [resultat[j], resultat[i]];
+      }
+
+      const objectiu = Math.floor(Math.random() * (999 - 101 + 1)) + 101;
+
+      app.innerHTML = `
+        <h2 class="text-2xl font-bold mb-4">🔢 Xifres seleccionades</h2>
+        <div class="flex flex-wrap justify-center gap-2 mb-4">
+          ${resultat.map(n => `<div class="bg-gray-800 text-xl font-bold px-4 py-2 rounded">${n}</div>`).join("")}
+        </div>
+        <p class="text-xl mb-6">Objectiu: <span class="text-yellow-400 font-bold">${objectiu}</span></p>
+        <button onclick="mostraInici()" class="bg-gray-700 hover:bg-gray-600 p-2 rounded w-full font-semibold">Nova partida</button>
+      `;
+    };
+
+    mostraInici();
+  </script>
+
+</body>
+</html>
