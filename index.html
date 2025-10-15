@@ -24,9 +24,39 @@
       `;
     };
 
-    // ---------- LLETRES ----------
-    const vocals = ["A","E","I","O","U"];
-    const consonants = ["B","C","D","F","G","H","J","K","L","M","N","NY","P","Q","R","S","T","V","X","Z"];
+       // ---------- LLETRES ----------
+    // Vocals amb probabilitats ponderades (Català)
+    const vocals = [
+      { lletra: "A", pes: 18 },
+      { lletra: "E", pes: 24 },
+      { lletra: "I", pes: 18 },
+      { lletra: "O", pes: 14 },
+      { lletra: "U", pes: 10 }
+    ];
+
+    // Consonants amb freqüències aproximades
+    const consonants = [
+      { lletra: "L", pes: 10 },
+      { lletra: "N", pes: 10 },
+      { lletra: "R", pes: 10 },
+      { lletra: "S", pes: 9 },
+      { lletra: "T", pes: 9 },
+      { lletra: "D", pes: 7 },
+      { lletra: "C", pes: 7 },
+      { lletra: "M", pes: 6 },
+      { lletra: "P", pes: 6 },
+      { lletra: "B", pes: 4 },
+      { lletra: "F", pes: 4 },
+      { lletra: "G", pes: 4 },
+      { lletra: "V", pes: 4 },
+      { lletra: "H", pes: 2 },
+      { lletra: "J", pes: 2 },
+      { lletra: "K", pes: 1 },
+      { lletra: "Q", pes: 1 },
+      { lletra: "X", pes: 1 },
+      { lletra: "Z", pes: 1 },
+      { lletra: "NY", pes: 2 }
+    ];
 
     let numVocals = 4;
     let numConsonants = 5;
@@ -61,14 +91,23 @@
       }
     };
 
+    // Funció per escollir una lletra segons probabilitats
+    const triaPonderat = (llista) => {
+      const totalPes = llista.reduce((s, l) => s + l.pes, 0);
+      const aleatori = Math.random() * totalPes;
+      let acumulat = 0;
+      for (const item of llista) {
+        acumulat += item.pes;
+        if (aleatori <= acumulat) return item.lletra;
+      }
+      return llista[llista.length - 1].lletra; // per seguretat
+    };
+
     const generaLletres = () => {
       const resultat = [];
-      for (let i = 0; i < numConsonants; i++) {
-        resultat.push(consonants[Math.floor(Math.random() * consonants.length)]);
-      }
-      for (let i = 0; i < numVocals; i++) {
-        resultat.push(vocals[Math.floor(Math.random() * vocals.length)]);
-      }
+      for (let i = 0; i < numConsonants; i++) resultat.push(triaPonderat(consonants));
+      for (let i = 0; i < numVocals; i++) resultat.push(triaPonderat(vocals));
+
       // Barregem les lletres
       for (let i = resultat.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -129,7 +168,7 @@
 
     const generaXifres = () => {
       const petites = [];
-      const grans = [10, 25, 50, 75];
+      const grans = [10, 10, 25, 50, 75];
       const resultat = [];
 
       // Genera segons la configuració
