@@ -124,80 +124,112 @@
     };
 
     // ---------- XIFRES ----------
-    let files = [0, 0, 0, 0]; // total 6
+// ---------- XIFRES ----------
+let files = [0, 0, 0, 0]; // total 6
 
-    const mostraXifres = () => {
-      files = [0, 0, 0, 0];
-      actualitzaXifresConfig();
-    };
+const mostraXifres = () => {
+  files = [0, 0, 0, 0];
+  actualitzaXifresConfig();
+};
 
-    const actualitzaXifresConfig = () => {
-      const total = files.reduce((a,b)=>a+b,0);
-      const potAcceptar = total === 6;
+const actualitzaXifresConfig = () => {
+  const total = files.reduce((a,b)=>a+b,0);
+  const potAcceptar = total === 6;
 
-      app.innerHTML = `
-        <h2 class="text-2xl font-bold mb-4">🔢 Mode Xifres</h2>
-        <p class="mb-4">Distribueix 6 xifres entre les files:</p>
-        <div class="space-y-3 mb-4">
-          ${files.map((v,i)=>`
-            <div class="flex items-center justify-between bg-gray-800 p-2 rounded">
-              <div>Fila ${i+1}</div>
-              <div class="flex items-center">
-                <div class="bg-gray-700 px-3 py-1 rounded mr-2">${v}</div>
-                <button onclick="incrementaFila(${i})" class="bg-green-600 px-3 py-1 rounded">+</button>
-              </div>
-            </div>
-          `).join("")}
+  app.innerHTML = `
+    <h2 class="text-2xl font-bold mb-4">🔢 Mode Xifres</h2>
+    <p class="mb-4">Distribueix 6 xifres entre les files:</p>
+    <div class="space-y-3 mb-4">
+      ${files.map((v,i)=>`
+        <div class="flex items-center justify-between bg-gray-800 p-2 rounded">
+          <div>Fila ${i+1}</div>
+          <div class="flex items-center">
+            <div class="bg-gray-700 px-3 py-1 rounded mr-2">${v}</div>
+            <button onclick="incrementaFila(${i})" class="bg-green-600 px-3 py-1 rounded">+</button>
+          </div>
         </div>
-        <p class="mb-2">Total: ${total} / 6</p>
-        <button ${potAcceptar ? "" : "disabled"} onclick="generaXifres()" 
-          class="p-2 rounded w-full font-semibold ${potAcceptar ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-700 opacity-50 cursor-not-allowed'}">
-          Acceptar
-        </button>
-        <button onclick="mostraInici()" class="mt-3 text-sm text-gray-300 underline">Tornar</button>
-      `;
-    };
+      `).join("")}
+    </div>
+    <p class="mb-2">Total: ${total} / 6</p>
+    <button ${potAcceptar ? "" : "disabled"} onclick="generaXifres()" 
+      class="p-2 rounded w-full font-semibold ${potAcceptar ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-700 opacity-50 cursor-not-allowed'}">
+      Acceptar
+    </button>
+    <button onclick="mostraInici()" class="mt-3 text-sm text-gray-300 underline">Tornar</button>
+  `;
+};
 
-    const incrementaFila = (i) => {
-      const total = files.reduce((a,b)=>a+b,0);
-      if (total < 6) {
-        files[i]++;
-        actualitzaXifresConfig();
-      }
-    };
+const incrementaFila = (i) => {
+  const total = files.reduce((a,b)=>a+b,0);
+  if (total < 6) {
+    files[i]++;
+    actualitzaXifresConfig();
+  }
+};
 
-    const generaXifres = () => {
-      const petites = [];
-      const grans = [10, 10, 25, 50, 75];
-      const resultat = [];
+// Funció auxiliar per triar segons pesos
+const triaSegonsPes = (llista) => {
+  const totalPes = llista.reduce((s, n) => s + n.pes, 0);
+  const rand = Math.random() * totalPes;
+  let acumulat = 0;
+  for (const item of llista) {
+    acumulat += item.pes;
+    if (rand <= acumulat) return item;
+  }
+  return llista[llista.length - 1];
+};
 
-      // Genera segons la configuració
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < files[i]; j++) {
-          resultat.push(Math.floor(Math.random() * 9) + 1);
-        }
-      }
-      for (let j = 0; j < files[3]; j++) {
-        resultat.push(grans[Math.floor(Math.random() * grans.length)]);
-      }
+const generaXifres = () => {
+  let resultat = [];
 
-      // Barregem les xifres
-      for (let i = resultat.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [resultat[i], resultat[j]] = [resultat[j], resultat[i]];
-      }
+  // 1️⃣ XIFRES PETITES (1–9) amb probabilitat decreixent
+  let petites = Array.from({ length: 9 }, (_, i) => ({ valor: i + 1, pes: 1 }));
 
-      const objectiu = Math.floor(Math.random() * (999 - 101 + 1)) + 101;
+  const numPetites = files[0] + files[1] + files[2];
+  for (let i = 0; i < numPetites; i++) {
+    const eleccio = triaSegonsPes(petites);
+    resultat.push(eleccio.valor);
+    // Reduïm el pes d’aquest número un 33%
+    eleccio.pes *= 0.67;
+  }
 
-      app.innerHTML = `
-        <h2 class="text-2xl font-bold mb-4">🔢 Xifres seleccionades</h2>
-        <div class="flex flex-wrap justify-center gap-2 mb-4">
-          ${resultat.map(n => `<div class="bg-gray-800 text-xl font-bold px-4 py-2 rounded">${n}</div>`).join("")}
-        </div>
-        <p class="text-xl mb-6">Objectiu: <span class="text-yellow-400 font-bold">${objectiu}</span></p>
-        <button onclick="mostraInici()" class="bg-gray-700 hover:bg-gray-600 p-2 rounded w-full font-semibold">Nova partida</button>
-      `;
-    };
+  // 2️⃣ XIFRES GRANS (només el 10 pot repetir-se)
+  const gransDisponibles = [
+    { valor: 10, potRepetir: true },
+    { valor: 25, potRepetir: false },
+    { valor: 50, potRepetir: false },
+    { valor: 75, potRepetir: false }
+  ];
+
+  const numGrans = files[3];
+  let gransUsats = {};
+
+  for (let i = 0; i < numGrans; i++) {
+    // Filtra grans disponibles segons repeticions
+    const possibles = gransDisponibles.filter(g => g.potRepetir || !gransUsats[g.valor]);
+    const tria = possibles[Math.floor(Math.random() * possibles.length)];
+    resultat.push(tria.valor);
+    if (!tria.potRepetir) gransUsats[tria.valor] = true;
+  }
+
+  // Barregem el resultat
+  for (let i = resultat.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [resultat[i], resultat[j]] = [resultat[j], resultat[i]];
+  }
+
+  // 3️⃣ Genera el número objectiu
+  const objectiu = Math.floor(Math.random() * (999 - 101 + 1)) + 101;
+
+  app.innerHTML = `
+    <h2 class="text-2xl font-bold mb-4">🔢 Xifres seleccionades</h2>
+    <div class="flex flex-wrap justify-center gap-2 mb-4">
+      ${resultat.map(n => `<div class="bg-gray-800 text-xl font-bold px-4 py-2 rounded">${n}</div>`).join("")}
+    </div>
+    <p class="text-xl mb-6">Objectiu: <span class="text-yellow-400 font-bold">${objectiu}</span></p>
+    <button onclick="mostraInici()" class="bg-gray-700 hover:bg-gray-600 p-2 rounded w-full font-semibold">Nova partida</button>
+  `;
+};
 
     mostraInici();
   </script>
